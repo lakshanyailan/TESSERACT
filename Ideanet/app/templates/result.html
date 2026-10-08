@@ -56,6 +56,13 @@
       <p class="fine">Our own scoring method, shown only to you.</p>
     </div>
 
+    {% if draft_id %}
+    <form method="post" action="/publish" style="margin:14px 0">
+      <input type="hidden" name="draft_id" value="{{ draft_id }}">
+      <button type="submit" class="btn block">Post this idea to For you</button>
+    </form>
+    {% endif %}
+
     {% if not hits %}
       <div class="empty"><b>Nothing close found</b><p>This looks like open ground.</p></div>
     {% else %}

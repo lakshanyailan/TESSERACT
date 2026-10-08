@@ -262,3 +262,12 @@
     });
   });
 })();
+
+/* show a waiting message while the local AI works (it can take up to a minute) */
+document.addEventListener("submit", function (e) {
+  var f = e.target;
+  if (f && f.getAttribute && f.getAttribute("action") === "/result") {
+    var b = f.querySelector('button[type="submit"]');
+    if (b) { b.textContent = "Gemma is thinking... please wait"; setTimeout(function () { b.disabled = true; }, 0); }
+  }
+});

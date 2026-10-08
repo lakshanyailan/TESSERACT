@@ -1,134 +1,159 @@
-import os
-import json
-import uuid
+"""Ideanet: the Flask app. Run from the Ideanet/ folder with:
+    python -m flask --app app.main run
+"""
 import hashlib
-import datetime
-from pathlib import Path
+import os
+import uuid
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
-load_dotenv()      # must run BEFORE importing auth, which reads .env
+load_dotenv()
 
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
+from flask import Flask, flash, g, redirect, render_template, request, url_for
 
-from . import db, scoring
+from . import auth, db, scoring
 
-BASE = Path(__file__).resolve().parent
-
-app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET", "dev-secret"))
-app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
-templates = Jinja2Templates(directory=BASE / "templates")
-
-db.init_db()
-print(f"[startup] seed projects in database: {db.seed_count()}")
-
-# Judged-but-not-yet-published ideas. Lives in memory; cleared when the server restarts.
-DRAFTS = {}
+MIN_SHOWN_SIMILARITY = 0.50     # below this a project is not "similar", so the carousel hides it
+DRAFTS = {}                     # judged-but-not-posted ideas, kept in memory (cleared on restart)
 
 
-# ---------------------------------------------------------------- login
-# If Google keys are in .env, use Person D's Google login.
-# Otherwise fall back to a simple "type your name" login so the demo still works.
-if os.getenv("GOOGLE_CLIENT_ID") and os.getenv("GOOGLE_CLIENT_SECRET"):
-    from . import auth
-    app.include_router(auth.router)
-    print("[startup] login mode: Google")
-else:
-    print("[startup] login mode: simple name login (no Google keys found)")
+def create_app():
+    app = Flask(__name__)
+    secret = os.getenv("SECRET_KEY") or os.getenv("SESSION_SECRET")
+    if not secret:
+        print("[warning] SECRET_KEY is not set in .env, using an unsafe development key")
+        secret = "dev-only-change-me"
+    app.config["SECRET_KEY"] = secret
 
-    @app.get("/login", response_class=HTMLResponse)
-    def login_page():
-        return """
-        <link rel="stylesheet" href="/static/style.css">
-        <h2>Log in</h2>
-        <form method="post" action="/login">
-          <input name="name" placeholder="Your name" required>
-          <button>Log in</button>
-        </form>"""
+    db.init_db()
+    auth.init_app(app)
 
-    @app.post("/login")
-    def login_submit(request: Request, name: str = Form(...)):
-        name = name.strip() or "Guest"
-        request.session["user"] = {"name": name, "email": f"{name.lower().replace(' ', '.')}@local"}
-        return RedirectResponse("/", status_code=303)
+    def back_to(default):
+        """Go back to the page the form was on, if it is on this site."""
+        ref = request.referrer
+        if ref and urlparse(ref).netloc == request.host:
+            return redirect(ref)
+        return redirect(default)
 
-    @app.get("/logout")
-    def logout(request: Request):
-        request.session.clear()
-        return RedirectResponse("/", status_code=303)
+    # ------------------------------------------------------------ Explore
+    @app.route("/")
+    def index():
+        return render_template("index.html", idea=request.args.get("idea", ""))
+
+    @app.route("/result", methods=["GET", "POST"])
+    def result():
+        if request.method == "GET":
+            return redirect(url_for("index"))
+        idea = request.form.get("idea", "").strip()
+        if len(idea) < 3:
+            flash("Type your idea first (at least 3 characters).", "error")
+            return redirect(url_for("index"))
+        try:
+            db.ensure_embeddings()                                  # first run only
+            res = scoring.judge("", idea, db.get_corpus())
+        except Exception as e:
+            print("[judge error]", repr(e))
+            flash("The AI judge could not run. Is Ollama running and are the model names right? "
+                  f"({type(e).__name__}: {e})", "error")
+            return render_template("index.html", idea=idea)
+
+        similar = [s for s in res["similar"] if s["similarity"] >= MIN_SHOWN_SIMILARITY]
+        draft_id = uuid.uuid4().hex
+        DRAFTS[draft_id] = {"idea": idea, "res": res}
+        while len(DRAFTS) > 50:
+            DRAFTS.pop(next(iter(DRAFTS)))
+        return render_template("result.html", idea=idea, score=res["score"], similar=similar,
+                               draft_id=draft_id, reasoning=res["reasoning"])
+
+    @app.route("/publish", methods=["POST"])
+    @auth.login_required
+    def publish():
+        draft = DRAFTS.get(request.form.get("draft_id", ""))
+        if not draft:
+            flash("That result expired. Check your idea again, then post it.", "error")
+            return redirect(url_for("index"))
+        idea, res = draft["idea"], draft["res"]
+        words = idea.split()
+        title = " ".join(words[:7]) + ("..." if len(words) > 7 else "")
+        stamp = db.now_iso()
+        fingerprint = hashlib.sha256(f"{idea}|{g.user['id']}|{stamp}".encode()).hexdigest()
+        improve = " ".join(x for x in (res["differentiators"], res["reasoning"]) if x)
+        new_id = db.add_idea(g.user["id"], title, idea, improve, res["score"], res["vector"], fingerprint)
+        DRAFTS.pop(request.form.get("draft_id", ""), None)
+        flash("Posted to For you.", "success")
+        return redirect(url_for("project", pid=f"u{new_id}"))
+
+    # ------------------------------------------------------------ feed + project pages
+    @app.route("/forum")
+    def forum():
+        me = g.user["id"] if g.user else None
+        by_project = db.comments_for(me_id=me)
+        seed = sorted(({k: v for k, v in p.items() if k != "vec"} for p in db.load_seed()),
+                      key=lambda p: p.get("date", ""), reverse=True)
+        posts = db.list_ideas() + seed
+        for p in posts:
+            p["date_label"] = p.get("date_label") or p.get("date", "")
+            p["comments"] = by_project.get(p["id"], [])
+            p["comment_count"] = len(p["comments"])
+        seen, stories = set(), []
+        for p in seed:
+            name = p.get("hackathon")
+            if name and name not in seen:
+                seen.add(name)
+                stories.append({"name": name, "tint": p.get("tint"), "id": len(stories), "url": "/forum"})
+        return render_template("forum.html", posts=posts, stories=stories)
+
+    @app.route("/idea/<pid>")
+    def project(pid):
+        p = db.get_project(pid)
+        if not p:
+            return render_template("forum.html", posts=[], stories=[]), 404
+        me = g.user["id"] if g.user else None
+        p["mine"] = bool(me) and p.get("user_id") == me
+        return render_template("idea.html", p=p, comments=db.comments_for(pid, me_id=me))
+
+    @app.route("/idea/<pid>/comment", methods=["POST"])
+    @auth.login_required
+    def add_comment(pid):
+        text = request.form.get("text", "").strip()[:280]
+        if not db.get_project(pid):
+            flash("That project does not exist.", "error")
+            return redirect(url_for("forum"))
+        if text:
+            db.add_comment(pid, g.user["id"], text)
+        return back_to(url_for("project", pid=pid))
+
+    @app.route("/idea/<pid>/comment/<int:cid>/delete", methods=["POST"])
+    @auth.login_required
+    def delete_comment(pid, cid):
+        db.delete_comment(cid, g.user["id"])                       # only deletes your own
+        return back_to(url_for("project", pid=pid))
+
+    # ------------------------------------------------------------ other pages
+    @app.route("/upcoming")
+    def upcoming():
+        return render_template("upcoming.html")
+
+    @app.route("/chats")
+    def chats():
+        return render_template("chats.html")
+
+    @app.route("/health")
+    def health():
+        """Open http://127.0.0.1:5000/health to check Ollama and the data are OK."""
+        import httpx
+        from . import ai
+        info = {"seed_projects": len(db.load_seed()),
+                "with_embeddings": sum(1 for p in db.load_seed() if p.get("vec")),
+                "chat_model": ai.CHAT_MODEL, "embed_model": ai.EMBED_MODEL}
+        try:
+            tags = httpx.get(f"{ai.OLLAMA}/api/tags", timeout=3).json()["models"]
+            info["ollama_models"] = [m["name"] for m in tags]
+        except Exception as e:
+            info["ollama_error"] = f"{type(e).__name__}: {e}"
+        return info
+
+    return app
 
 
-def current_user(request: Request):
-    return request.session.get("user")
-
-
-def error_page(message: str):
-    return HTMLResponse(
-        f'<link rel="stylesheet" href="/static/style.css">'
-        f'<h2>Something went wrong</h2><p>{message}</p><a href="/">Back</a>',
-        status_code=500,
-    )
-
-
-# ---------------------------------------------------------------- pages
-@app.get("/")
-def home(request: Request):
-    return templates.TemplateResponse(request, "index.html", {"user": current_user(request)})
-
-
-@app.post("/judge")
-def judge_idea(request: Request, title: str = Form(...), description: str = Form(...)):
-    title, description = title.strip(), description.strip()
-    if not title or not description:
-        return RedirectResponse("/", status_code=303)
-    try:
-        result = scoring.judge(title, description, db.get_all_vectors())   # Person B's function
-    except Exception as e:
-        return error_page(f"The AI judge failed. Is Ollama running? ({e})")
-
-    draft_id = uuid.uuid4().hex
-    DRAFTS[draft_id] = {"title": title, "description": description, "result": result}
-    return templates.TemplateResponse(request, "result.html", {
-        "user": current_user(request), "r": result, "title": title,
-        "description": description, "draft_id": draft_id,
-    })
-
-
-@app.post("/publish")
-def publish(request: Request, draft_id: str = Form(...)):
-    user = current_user(request)
-    if not user:
-        return RedirectResponse("/login", status_code=303)
-    draft = DRAFTS.get(draft_id)
-    if not draft:
-        return RedirectResponse("/", status_code=303)     # server restarted; submit again
-
-    created = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    fingerprint = hashlib.sha256(
-        f"{draft['title']}|{draft['description']}|{user['email']}|{created}".encode()
-    ).hexdigest()
-
-    idea_id = db.add_idea(draft["title"], draft["description"], user.get("name", ""),
-                          user["email"], draft["result"], fingerprint, created)
-    DRAFTS.pop(draft_id, None)
-    return RedirectResponse(f"/idea/{idea_id}", status_code=303)
-
-
-@app.get("/forum")
-def forum(request: Request):
-    return templates.TemplateResponse(request, "forum.html", {
-        "user": current_user(request), "ideas": db.list_ideas()})
-
-
-@app.get("/idea/{idea_id}")
-def idea_page(request: Request, idea_id: int):
-    idea = db.get_idea(idea_id)
-    if not idea:
-        return RedirectResponse("/forum", status_code=303)
-    return templates.TemplateResponse(request, "idea.html", {
-        "user": current_user(request), "idea": idea,
-        "similar": json.loads(idea["similar_json"])})
+app = create_app()

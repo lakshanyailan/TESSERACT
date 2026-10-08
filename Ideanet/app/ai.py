@@ -1,4 +1,5 @@
 import json
+from functools import lru_cache
 import httpx
 import numpy as np
 
@@ -7,6 +8,7 @@ CHAT_MODEL = "gemma4:latest"          # change to match `ollama list`
 EMBED_MODEL = "nomic-embed-text"   # change if your name has a tag, e.g. nomic-embed-text:latest
 
 
+@lru_cache(maxsize=4096)
 def embed(text: str) -> list[float]:
     """Turn text into a list of numbers that represents its meaning."""
     r = httpx.post(
