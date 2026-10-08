@@ -1,79 +1,74 @@
 import json
-import os
-import threading
-import uuid
-from datetime import datetime, timezone
+import sqlite3
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-USERS_FILE = os.path.join(BASE_DIR, "data", "users.json")
-
-_lock = threading.Lock()
+# Always the project root, no matter which folder you run from
+DB_PATH = Path(__file__).resolve().parent.parent / "ideas.db"
 
 
-def _read():
-    if not os.path.exists(USERS_FILE):
-        return []
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return []
+def conn():
+    c = sqlite3.connect(DB_PATH)
+    c.row_factory = sqlite3.Row      # lets us read columns by name
+    return c
 
 
-def _write(users):
-    os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
-    tmp = USERS_FILE + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(users, f, indent=2)
-    os.replace(tmp, USERS_FILE)  # atomic write, avoids corrupted file
+def init_db():
+    with conn() as c:
+        c.executescript("""
+        CREATE TABLE IF NOT EXISTS seed_projects(
+            id INTEGER PRIMARY KEY,
+            title TEXT, description TEXT, url TEXT, vector TEXT
+        );
+        CREATE TABLE IF NOT EXISTS ideas(
+            id INTEGER PRIMARY KEY,
+            title TEXT, description TEXT,
+            author_name TEXT, author_email TEXT,
+            score REAL, reasoning TEXT,
+            similar_json TEXT, vector TEXT,
+            hash TEXT, created_at TEXT
+        );
+        """)
 
 
-def get_user_by_id(user_id):
-    return next((u for u in _read() if u["id"] == user_id), None)
+def get_all_vectors():
+    """Everything an idea can be compared against: seed projects + published ideas."""
+    items = []
+    with conn() as c:
+        for r in c.execute("SELECT title, description, url, vector FROM seed_projects"):
+            items.append({"title": r["title"], "description": r["description"],
+                          "url": r["url"] or "", "vec": json.loads(r["vector"])})
+        for r in c.execute("SELECT title, description, vector FROM ideas"):
+            items.append({"title": r["title"], "description": r["description"],
+                          "url": "", "vec": json.loads(r["vector"])})
+    return items
 
 
-def get_user_by_email(email):
-    email = email.strip().lower()
-    return next((u for u in _read() if u["email"] == email), None)
+def seed_count():
+    with conn() as c:
+        return c.execute("SELECT COUNT(*) FROM seed_projects").fetchone()[0]
 
 
-def get_user_by_username(username):
-    username = username.strip().lower()
-    return next((u for u in _read() if u["username"].lower() == username), None)
+def add_idea(title, description, name, email, result, fingerprint, created):
+    with conn() as c:
+        cur = c.execute(
+            """INSERT INTO ideas(title, description, author_name, author_email, score,
+                                 reasoning, similar_json, vector, hash, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+            (title, description, name, email, result["score"], result["reasoning"],
+             json.dumps(result["similar"]), json.dumps(result["vector"]),
+             fingerprint, created),
+        )
+        return cur.lastrowid
 
 
-def create_user(username, email, password_hash):
-    """Create and return a new user. Raises ValueError on duplicates."""
-    with _lock:
-        users = _read()
-        if any(u["email"] == email.strip().lower() for u in users):
-            raise ValueError("An account with that email already exists.")
-        if any(u["username"].lower() == username.strip().lower() for u in users):
-            raise ValueError("That username is already taken.")
-
-        user = {
-            "id": uuid.uuid4().hex,
-            "username": username.strip(),
-            "email": email.strip().lower(),
-            "password_hash": password_hash,
-            "bio": "",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        users.append(user)
-        _write(users)
-        return user
+def list_ideas():
+    with conn() as c:
+        return [dict(r) for r in c.execute(
+            "SELECT id, title, description, author_name, score, created_at "
+            "FROM ideas ORDER BY id DESC")]
 
 
-def update_user(user_id, **fields):
-    """Update allowed fields on a user and return the updated record."""
-    allowed = {"username", "email", "password_hash", "bio"}
-    with _lock:
-        users = _read()
-        for u in users:
-            if u["id"] == user_id:
-                for key, value in fields.items():
-                    if key in allowed:
-                        u[key] = value
-                _write(users)
-                return u
-    return None
+def get_idea(idea_id):
+    with conn() as c:
+        row = c.execute("SELECT * FROM ideas WHERE id = ?", (idea_id,)).fetchone()
+        return dict(row) if row else None
