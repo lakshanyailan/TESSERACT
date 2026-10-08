@@ -24,18 +24,19 @@ def cosine(a, b) -> float:
     return float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
-def ask_gemma(prompt: str, model: str = CHAT_MODEL) -> dict:
-    """Send a prompt to Gemma and get back a Python dict (parsed from JSON)."""
-    r = httpx.post(
-        f"{OLLAMA}/api/chat",
-        json={
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "stream": False,      # wait for the full answer instead of word-by-word chunks
-            "format": "json",     # force Gemma to output valid JSON
-        },
-        timeout=300,              # local models can be slow; don't give up after 5 seconds
-    )
-    r.raise_for_status()
-    text = r.json()["message"]["content"]
-    return json.loads(text)       # turn the JSON string into a Python dict
+def ask_gemma(prompt: str, model: str = CHAT_MODEL, retries: int = 2) -> dict:
+    last_error = None
+    for _ in range(retries):
+        try:
+            r = httpx.post(
+                f"{OLLAMA}/api/chat",
+                json={"model": model, "messages": [{"role": "user", "content": prompt}],
+                      "stream": False, "format": "json"},
+                timeout=300,
+            )
+            r.raise_for_status()
+            return json.loads(r.json()["message"]["content"])
+        except (json.JSONDecodeError, KeyError) as e:
+            last_error = e                    # try again
+    return {"score": 5, "reasoning": "The AI judge could not produce a valid answer.",
+            "differentiators": ""}            # safe fallback so the website doesn't crash
