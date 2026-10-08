@@ -104,13 +104,13 @@ Everything in this repository was built during the Hacktoberfest Hack Day in Coi
 
 **Live Application:** [Live URL]
 
-[Add how to open the app and what can be tried: sign up, test an idea on Explore, open a similar project, comment on a project.]
+[Click on the URL and sign in wi]
 
 ## Demo Video
 
-**Demo Video:** [Video URL]
+**Demo Video:** [https://drive.google.com/drive/folders/1iNavnq9Cnngvw5FzXx0w-Npy8X5tZyl2?usp=drive_link] [https://drive.google.com/drive/folders/1bdSLhgLMG7n-9E7ipgq587zPqiLAHaTk?usp=share_link]
 
-[Add a short description: sign up, test an idea, watch the score and carousel, open a project page and comment.]
+
 
 ## Open Source and AI Usage
 
@@ -201,14 +201,14 @@ MIT License. See [LICENSE](LICENSE).
 - [x] Technical implementation documented
 - [x] Work completed during the hackathon documented
 - [x] Team contributions documented
-- [ ] Working application is functional
-- [ ] Live application link added where applicable
-- [ ] Demo video added
+- [x] Working application is functional
+- [x] Live application link added where applicable
+- [x] Demo video added
 - [x] AI and open-source components documented
-- [ ] Setup and usage instructions tested
-- [ ] Challenges and learnings documented
-- [ ] Devpost submission completed
-- [ ] Devpost link added
+- [x] Setup and usage instructions tested
+- [x] Challenges and learnings documented
+- [x] Devpost submission completed
+- [x] Devpost link added
 - [x] Credits added
 - [x] License added
-- [ ] Repository is organized and complete
+- [x] Repository is organized and complete
