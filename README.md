@@ -104,13 +104,13 @@ Everything in this repository was built during the Hacktoberfest Hack Day in Coi
 
 **Live Application:** [Live URL]
 
-[Add how to open the app and what can be tried: sign up, test an idea on Explore, open a similar project, comment on a project.]
+[Click on the URL and sign in wi]
 
 ## Demo Video
 
-**Demo Video:** [Video URL]
+**Demo Video:** [(https://drive.google.com/drive/folders/1bdSLhgLMG7n-9E7ipgq587zPqiLAHaTk?usp=share_link)]
 
-[Add a short description: sign up, test an idea, watch the score and carousel, open a project page and comment.]
+[shows the live display of the model]
 
 ## Open Source and AI Usage
 
