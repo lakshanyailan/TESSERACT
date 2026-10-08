@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Website Redesign",
+    "description": "Refresh the company website",
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "name": "Mobile App",
+    "description": "Build an app for iOS and Android",
+    "status": "planned"
+  }
+]
