@@ -23,7 +23,7 @@ Hackathon participants often struggle to discover relevant projects, showcase th
 
 ### Why We Chose This Problem
 
-[Explain why the team selected this problem and why solving it is important.]
+[We chose this problem because many hackathon ideas are similar to existing projects, making originality difficult to assess. **Ideanet uses AI to compare submitted ideas with existing projects and provide an originality score, helping participants understand how unique their idea is.**]
 
 ## Solution
 
@@ -75,11 +75,12 @@ If a category or technology is not implemented in the project, specify `N/A` ins
 
 ### Team Contributions
 
-- **[Jatin Naga Sai Batchu]:**               [Contribution]
-- **[Lakshanya Ilan Sezhiyan]:**             [Contribution]
-- **[Akshitha Venkatesh Devithulasimani]:**  [Contribution]
-- **[Aakaash V]:**                           [Contribution]
-
+| Team Member | Role & Contribution |
+|---|---|
+| **Jatin Naga Sai Batchu** | Developed the server-side architecture and managed data storage |
+| **Lakshanya Ilan Sezhiyan** | Designed and implemented the user interface and website experience |
+| **Akshitha Venkatesh Devithulasimani** | Handled authentication, data organization, and GitHub repository management |
+| **Aakaash V** | Built the AI-based system for evaluating project idea originality |
 ## Working Application
 
 **Live Application:** [Live URL]
