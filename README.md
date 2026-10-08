@@ -7,11 +7,12 @@
 **Team Name:** [Tesseract Testers]
 
 
-| Member                                 | Contribution                    |
-| [Jatin Naga Sai Batchu]                | [Backend and database]          |
-| [Lakshanya Ilan Sezhiyan]              | [Frontend]                      |
-| [Akshitha Venkatesh Devithulasimani]   | [Login , Data and git captain]  |
-| [Aakaash V]                            | [AI Engineer]                   |
+| Member | Contribution |
+|---|---|
+| Jatin Naga Sai Batchu | Backend and Database |
+| Lakshanya Ilan Sezhiyan | Frontend |
+| Akshitha Venkatesh Devithulasimani | Login, Data and Git Captain |
+| Aakaash V | AI Engineer |
 
 
 ## Problem Statement
