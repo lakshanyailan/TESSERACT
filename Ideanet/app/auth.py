@@ -91,7 +91,7 @@ def signup():
 
         flash(error, "error")
 
-    return render_template("signup.html")
+    return render_template("auth.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -114,7 +114,7 @@ def login():
             nxt = request.args.get("next")
             return redirect(nxt if _is_safe_url(nxt) else "/")
 
-    return render_template("login.html")
+    return render_template("auth.html")
 
 
 @auth_bp.route("/logout", methods=["POST"])
