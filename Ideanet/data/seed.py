@@ -1,48 +1,53 @@
 import json
-import sqlite3
+import sys
 from pathlib import Path
 
-DATA_FILE = Path(__file__).with_name("seed_projects.json")
-DATABASE_FILE = Path(__file__).with_name("projects.db")
+DATA = Path(__file__).resolve().parent
+ROOT = DATA.parent                       # the Ideanet/ folder
+sys.path.insert(0, str(ROOT))
+
+SEED_FILE = DATA / "seed_projects.json"
+OUT_FILE = DATA / "projects.json"
 
 
-def seed_projects() -> None:
-    with DATA_FILE.open(encoding="utf-8") as file:
-        projects = json.load(file)
+def load_seed():
+    with SEED_FILE.open(encoding="utf-8") as f:
+        projects = json.load(f)
+    if not isinstance(projects, list) or not projects:
+        raise SystemExit("seed_projects.json must be a non-empty JSON list.")
+    for p in projects:
+        for key in ("id", "title", "idea"):
+            if key not in p:
+                raise SystemExit(f"Project is missing '{key}': {p}")
+        p["id"] = str(p["id"])
+    return projects
 
-    if not isinstance(projects, list):
-        raise ValueError("seed_projects.json must contain a JSON list.")
 
-    with sqlite3.connect(DATABASE_FILE) as connection:
-        connection.execute("""
-            CREATE TABLE IF NOT EXISTS projects (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                status TEXT NOT NULL
-            )
-        """)
+def add_embeddings(projects):
+    try:
+        from app.ai import embed
+    except Exception as e:
+        print(f"Skipping embeddings (could not import app.ai: {e})")
+        return 0
+    done = 0
+    for p in projects:
+        try:
+            p["vec"] = embed(f"{p['title']}. {p['idea']}")
+            done += 1
+        except Exception as e:
+            print(f"Ollama not available ({e}). Saving without embeddings.")
+            for q in projects:
+                q.pop("vec", None)
+            return 0
+    return done
 
-        for project in projects:
-            connection.execute(
-                """
-                INSERT INTO projects (id, name, description, status)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET
-                    name = excluded.name,
-                    description = excluded.description,
-                    status = excluded.status
-                """,
-                (
-                    project["id"],
-                    project["name"],
-                    project.get("description", ""),
-                    project.get("status", "planned"),
-                ),
-            )
 
-    print(f"Seeded {len(projects)} projects into {DATABASE_FILE.name}.")
+def main():
+    projects = load_seed()
+    n = add_embeddings(projects)
+    OUT_FILE.write_text(json.dumps(projects, indent=2), encoding="utf-8")
+    print(f"Saved {len(projects)} projects to {OUT_FILE.name} ({n} with embeddings).")
 
 
 if __name__ == "__main__":
-    seed_projects()
+    main()
