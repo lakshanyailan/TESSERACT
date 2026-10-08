@@ -63,16 +63,16 @@ flowchart LR
 
 | Category        | Technologies |
 | --------------- | --------------------------- |
-| Frontend        | HTML, CSS and JavaScript served as Jinja templates (no framework, no build step), Bricolage Grotesque and Instrument Sans fonts |
-| Backend         | Python, Flask |
-| Database        | JSON file storage (users, projects, comments) |
+| Frontend        | HTML, CSS and JavaScript  |
+| Backend         | Python in Flask |
+| Database        | JSON ,SQL |
 | AI / ML         | Gemma (local, via Ollama) and the `nomic-embed-text` embedding model |
 | Infrastructure  | Runs locally; Ollama serves the models |
 | APIs / Services | Ollama local API (`localhost:11434`) |
 
 ### How It Works
 
-1. A visitor signs up or logs in. Passwords are hashed, and the session is stored in a signed cookie.
+1. A visitor signs up or logs in. **Passwords are hashed**, and the session is stored in a signed cookie.
 2. On the Explore page they describe an idea and submit it.
 3. The backend turns the idea into an embedding and compares it with the embeddings of existing projects to find the five closest.
 4. Gemma is shown the idea and those five projects and returns a score, its reasoning, and what is new about the idea.
