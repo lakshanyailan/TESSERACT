@@ -108,7 +108,7 @@ Everything in this repository was built during the Hacktoberfest Hack Day in Coi
 
 ## Demo Video
 
-**Demo Video:** [https://drive.google.com/drive/folders/1iNavnq9Cnngvw5FzXx0w-Npy8X5tZyl2?usp=drive_link]
+**Demo Video:** [https://drive.google.com/drive/folders/1iNavnq9Cnngvw5FzXx0w-Npy8X5tZyl2?usp=drive_link] [https://drive.google.com/drive/folders/1bdSLhgLMG7n-9E7ipgq587zPqiLAHaTk?usp=share_link]
 
 
 
@@ -201,7 +201,7 @@ MIT License. See [LICENSE](LICENSE).
 - [x] Technical implementation documented
 - [x] Work completed during the hackathon documented
 - [x] Team contributions documented
-- [ ] Working application is functional
+- [x] Working application is functional
 - [ ] Live application link added where applicable
 - [ ] Demo video added
 - [x] AI and open-source components documented
