@@ -1,0 +1,115 @@
+{#
+  RESULT. Route:  POST /result   (render_template("result.html", idea=..., score=..., similar=[...]))
+
+  Variables
+    idea     str    what the user typed
+    score    float  originality 1.0 to 9.9  (higher = more original)
+    similar  list   closest projects first. Each item is a dict with:
+               id, title, idea, built, improve, hackathon, by      (strings)
+               tech     list of str       e.g. ["Python", "Gemma"]
+               shared   list of str       words/themes it shares with the user's idea (optional)
+               closeness  str             e.g. "Very close", "Close", "Related"  (optional)
+               url      str               link to its page (optional, defaults to /idea/<id>)
+  Wording rule: say "similar to". Never "plagiarism" or "patented".
+#}
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% set active = 'explore' %}
+{% set page_title = 'Result' %}
+{% set back_url = '/' %}
+{% set tints = ['blue', 'pink', 'green', 'purple', 'peach', 'teal'] %}
+{% block content %}
+{% set s = score|float %}
+{% set band = 'pink' if s < 5 else ('purple' if s < 7.5 else ('blue' if s < 9 else 'green')) %}
+{% if s >= 9 %}{% set head = 'Wow, keep the creative juices flowing' %}{% set body = "Your idea's great. Almost nothing like it exists yet." %}
+{% elif s >= 7.5 %}{% set head = 'Fresh and promising' %}{% set body = 'A few projects touch it, so sharpen what makes yours different.' %}
+{% elif s >= 5 %}{% set head = 'Crowded ground' %}{% set body = 'Study what exists and pick one clear angle nobody has taken.' %}
+{% else %}{% set head = 'Well covered already' %}{% set body = 'Go through the matches below and look for the gap they leave.' %}{% endif %}
+{% set hits = similar|default([]) %}
+<div class="explore">
+  <form class="box" method="post" action="/result">
+    <label for="idea">Your idea</label>
+    <textarea id="idea" name="idea" rows="3" required minlength="3">{{ idea }}</textarea>
+    <div class="box-foot">
+      <a class="link" href="/">Start over</a>
+      <button type="submit" class="btn">Check originality</button>
+    </div>
+  </form>
+
+  <section aria-live="polite" class="result">
+    <div class="score-card" data-score="{{ '%.1f'|format(s) }}" style="--sc: var(--c-{{ band }})">
+      <div class="sc-top">
+        <span class="sc-label">Originality</span>
+        <span class="sc-count">{{ hits|length }} similar {{ 'project' if hits|length == 1 else 'projects' }}</span>
+      </div>
+      <div class="sc-row" role="img" aria-label="Originality score {{ '%.1f'|format(s) }} out of 10">
+        <div class="sc-num"><b>{{ '%.1f'|format(s) }}</b><span>/ 10</span></div>
+        <div class="sc-meter">
+          {% for k in range(10) %}<i class="sc-seg"><u style="transform: scaleX({{ [0, [1, s - k]|min]|max }})"></u></i>{% endfor %}
+        </div>
+      </div>
+      <h2 class="verdict">{{ head }}</h2>
+      <p class="verdict-body">{{ body }}</p>
+      {% if hits %}
+      <p class="sc-closest"><span class="sc-dotlet" style="background: var(--c-{{ band }})"></span><span>Closest match: <b>{{ hits[0].title }}</b>{% if hits[0].closeness %} · {{ hits[0].closeness|lower }}{% endif %}</span></p>
+      {% endif %}
+      <p class="fine">Our own scoring method, shown only to you.</p>
+    </div>
+
+    {% if not hits %}
+      <div class="empty"><b>Nothing close found</b><p>This looks like open ground.</p></div>
+    {% else %}
+    <div class="carousel" data-carousel aria-label="Similar projects">
+      <div class="car-head">
+        <h2 class="sec">Similar projects <span class="muted">({{ hits|length }})</span></h2>
+        <button type="button" class="round solid car-play" data-play aria-label="Pause auto-advance"></button>
+      </div>
+      <div class="story-segs" role="group" aria-label="Project progress">
+        {% for h in hits %}<button type="button" class="story-seg" aria-label="Go to {{ h.title }}"><i><b></b></i></button>{% endfor %}
+      </div>
+      <div class="car-row">
+        <button type="button" class="round solid" data-prev aria-label="Previous project">{{ icon('left') }}</button>
+        <div class="car-stage">
+        {% for h in hits %}
+          <button type="button" class="plain preview" hidden data-detail="detail-{{ loop.index0 }}" style="--pc: var(--t-{{ tints[loop.index0 % 6] }})" aria-label="Open details for {{ h.title }}">
+            <span class="pv-band">
+              <span class="pv-hack">{{ h.hackathon }}</span>
+              {% if h.closeness %}<span class="pill">{{ h.closeness }}</span>{% endif %}
+            </span>
+            <span class="pv-body">
+              <span class="pv-title">{{ h.title }}</span>
+              <span class="pv-idea">{{ h.idea }}</span>
+              {% if h.shared %}<span class="pv-shared">{% for w in h.shared[:3] %}<i>{{ w }}</i>{% endfor %}</span>{% endif %}
+              <span class="pv-foot"><span class="pv-cta">See what's built {{ icon('up', 16) }}</span></span>
+            </span>
+          </button>
+        {% endfor %}
+        </div>
+        <button type="button" class="round solid" data-next aria-label="Next project">{{ icon('right') }}</button>
+      </div>
+      <div class="muted center" data-counter>1 of {{ hits|length }}</div>
+    </div>
+
+    {% for h in hits %}
+    <div class="overlay" id="detail-{{ loop.index0 }}" role="dialog" aria-label="Details: {{ h.title }}" hidden>
+      <div class="sheet detail">
+        <div class="detail-head" style="background: var(--t-{{ tints[loop.index0 % 6] }})">
+          <button type="button" class="round" data-close aria-label="Close details">{{ icon('x', 18) }}</button>
+          {% if h.closeness %}<span class="pill">{{ h.closeness }}</span>{% endif %}
+          <h2>{{ h.title }}</h2>
+          <div>{{ h.hackathon }} · by {{ h.by }}</div>
+        </div>
+        <div class="detail-body">
+          <section><h3>Summary</h3><p>{{ h.idea }}</p></section>
+          {% if h.built %}<section><h3>What's built</h3><p>{{ h.built }}</p></section>{% endif %}
+          {% if h.improve %}<section class="boxed"><h3>How to improve on it</h3><p>{{ h.improve }}</p></section>{% endif %}
+          {% if h.tech %}<div class="tags">{% for t in h.tech %}<span>#{{ t|lower|replace(' ', '') }}</span>{% endfor %}</div>{% endif %}
+          <a class="btn block" href="{{ h.url or ('/idea/' ~ h.id) }}">Open project page</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

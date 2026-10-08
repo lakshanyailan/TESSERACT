@@ -1,0 +1,24 @@
+{#
+  EXPLORE (home). Route:  GET /
+  Needs no variables. Optional:  idea  (text to pre-fill the box)
+  The form POSTs the idea to /result  (result.html shows the score).
+#}
+{% extends "base.html" %}
+{% set active = 'explore' %}
+{% set page_title = 'Explore' %}
+{% block content %}
+<div class="explore">
+  <section class="hero">
+    <h1>Test your <em>idea</em></h1>
+    <p class="muted">Describe what you want to build. We search past and ongoing hackathons and show what already exists.</p>
+  </section>
+  <form class="box" method="post" action="/result">
+    <label for="idea">Your idea</label>
+    <textarea id="idea" name="idea" rows="3" required minlength="3" placeholder="A voice assistant that helps older relatives read and reply to messages">{{ idea|default('') }}</textarea>
+    <div class="box-foot">
+      <button type="button" class="link" data-example="Split a restaurant bill with friends by scanning the receipt">Try an example</button>
+      <button type="submit" class="btn">Check originality</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

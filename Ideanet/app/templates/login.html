@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log in · Ideanet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --t-peach:#F4DBC9;--t-lav:#DCD9F1;--t-rose:#F0D8E0;--t-mint:#D3E8DF;--t-butter:#F0E7C6;--t-sky:#D5E2F0;
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#5C5C5C; --line:#E4E4E4; --accent:#E8BE9F;
+  --primary-bg:#000000; --primary-fg:#FFFFFF; --focus:#000000;
+  --on-tint:#000000; --soft:#F5F5F5;
+  --l0-bg:#FFFFFF; --l0-fg:#4D4D4D; --l0-line:#8C8C8C;
+  --l1-bg:#F6E9DF; --l1-fg:#000000; --l2-bg:#EBCDB6; --l2-fg:#000000; --l3-bg:#DDAE8D; --l3-fg:#000000;
+  --display:'Bricolage Grotesque','Instrument Sans',system-ui,sans-serif; --body:'Instrument Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#000000; --ink:#FFFFFF; --muted:#E6E6E6; --line:#26262E; --accent:#DDBBA3;
+  --primary-bg:#E3CDBD; --primary-fg:#000000; --focus:#C9C6EC; --soft:#121216; --t-peach:#5B4741;--t-lav:#48465F;--t-rose:#5A4651;--t-mint:#3D544D;--t-butter:#58523A;--t-sky:#3E4E62;--on-tint:#FFFFFF;
+  --l0-bg:#000000; --l0-fg:#FFFFFF; --l0-line:#6F6D9C;
+  --l1-bg:#2C2730; --l1-fg:#FFFFFF; --l2-bg:#5C4742; --l2-fg:#FFFFFF; --l3-bg:#8A6A5E; --l3-fg:#FFFFFF;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#000000; --ink:#FFFFFF; --muted:#E6E6E6; --line:#26262E; --accent:#DDBBA3;
+  --primary-bg:#E3CDBD; --primary-fg:#000000; --focus:#C9C6EC; --soft:#121216; --t-peach:#5B4741;--t-lav:#48465F;--t-rose:#5A4651;--t-mint:#3D544D;--t-butter:#58523A;--t-sky:#3E4E62;--on-tint:#FFFFFF;
+  --l0-bg:#000000; --l0-fg:#FFFFFF; --l0-line:#6F6D9C;
+  --l1-bg:#2C2730; --l1-fg:#FFFFFF; --l2-bg:#5C4742; --l2-fg:#FFFFFF; --l3-bg:#8A6A5E; --l3-fg:#FFFFFF;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+h1,p{margin:0}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.logo{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.04em}
+.btn{border:0;background:var(--primary-bg);color:var(--primary-fg);min-height:48px;padding:0 24px;border-radius:24px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.block{width:100%}
+.theme-btn{position:fixed;top:14px;right:14px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;justify-content:center}
+.flash{border-radius:14px;padding:10px 14px;font-size:14px;border:1px solid var(--line);background:var(--soft)}
+.flash.error{border-color:#D6455D;color:#C13A52}
+:root[data-theme="dark"] .flash.error{color:#FF8DA1}
+.flash.success{border-color:var(--line)}
+/* login: one quiet column on white */
+.login-page{min-height:100dvh;display:grid;place-items:center;padding:32px 16px;background:var(--surface)}
+.login-col{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.login-brand{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.login-brand .logo{padding:0;font-size:34px}
+.login-brand p{color:var(--muted);font-size:15px}
+.login-col h1{font-family:var(--display);font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:2px}
+.login-col form{display:flex;flex-direction:column;gap:12px}
+.textlink{border:0;background:none;padding:0;min-height:24px;text-decoration:underline;color:var(--ink);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field-in{position:relative}
+.field input{width:100%;min-height:50px;padding:0 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface)}
+.field input::placeholder{color:var(--muted)}
+.field input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 25%,transparent)}
+.field.bad input{border-color:#D6455D}
+.field small,.check small{color:#C13A52;font-size:13px}
+:root[data-theme="dark"] .field small,:root[data-theme="dark"] .check small{color:#FF8DA1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .field small,:root:not([data-theme="light"]) .check small{color:#FF8DA1}}
+.eye{align-self:flex-end;border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;min-height:32px;padding:0 4px;text-decoration:underline;text-underline-offset:3px}
+.eye:hover{color:var(--ink)}
+.check{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.check.split{flex-direction:row;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.check label{display:flex;align-items:center;gap:8px;min-height:32px;cursor:pointer;flex-wrap:wrap}
+.check input{width:18px;height:18px;accent-color:var(--primary-bg)}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.soc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.soc button{min-height:48px;border-radius:24px;border:1.5px solid var(--line);background:transparent;font-weight:600}
+.soc button:hover{border-color:var(--ink)}
+.login-switch{text-align:center;color:var(--muted)}
+.guest{border:0;background:none;color:var(--muted);min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:4px;text-decoration:underline}
+.login-col .fine{text-align:center}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+
+
+</style>
+</head>
+<body>
+<button type="button" class="theme-btn" id="theme" aria-label="Switch light or dark mode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+<main class="login-page">
+  <div class="login-col">
+    <header class="login-brand">
+      <span class="logo">ideanet</span>
+      <p>Where ideas meet innovators.</p>
+    </header>
+
+    <h1>Welcome back</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash {{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <form id="form" method="post" novalidate>
+      <div class="field"><label class="sr" for="id">Username or email</label><div class="field-in"><input id="id" name="identifier" type="text" placeholder="Username or email" autocomplete="username" ></div><small class="e" hidden>Enter your username or email.</small></div>
+      <div class="field"><label class="sr" for="pw">Password</label><div class="field-in"><input id="pw" name="password" type="password" placeholder="Password" autocomplete="current-password" ></div><button type="button" class="eye" id="eye" aria-pressed="false" aria-label="Show password">Show password</button><small class="e" hidden>Enter your password.</small></div>
+      <button type="submit" class="btn block go">Log in</button>
+    </form>
+
+    <p class="login-switch">New to Ideanet? <a class="textlink" href="{{ url_for('auth.signup') }}">Create an account</a></p>
+  </div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var root = document.documentElement;
+  try { var t = localStorage.getItem("theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+  $("theme").onclick = function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var n = dark ? "light" : "dark"; root.setAttribute("data-theme", n);
+    try { localStorage.setItem("theme", n); } catch (e) {}
+  };
+  $("eye").onclick = function () {
+    var p = $("pw"), show = p.type === "password";
+    p.type = show ? "text" : "password"; this.textContent = show ? "Hide password" : "Show password";
+    this.setAttribute("aria-pressed", show); this.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  };
+  function flag(input, bad) {
+    var box = input.closest(".field");
+    box.classList.toggle("bad", bad); box.querySelector(".e").hidden = !bad;
+    return bad;
+  }
+  $("form").addEventListener("submit", function (ev) {
+    var bad = false;
+    bad = flag($("id"), !$("id").value.trim()) | bad;
+    bad = flag($("pw"), !$("pw").value) | bad;
+    if (bad) ev.preventDefault();
+  });
+})();
+</script>
+</body>
+</html>

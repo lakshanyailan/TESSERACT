@@ -1,0 +1,22 @@
+{#
+  CHATS (placeholder until the backend has messages). Route:  GET /chats
+  Variable  chats  list of {name, handle, last, at, tint}   (optional)
+#}
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar %}
+{% set active = 'chats' %}
+{% set page_title = 'Chats' %}
+{% block content %}
+<form class="searchbar" role="search" onsubmit="return false" style="margin:16px">
+  {{ icon('search', 18) }}
+  <input type="search" placeholder="Search people to chat with" aria-label="Search people">
+</form>
+{% for c in chats|default([]) %}
+<a class="post-head" href="/chats/{{ c.handle|replace('@', '') }}">
+  <span class="row">{{ avatar(c.name, c.tint or 'blue', 44) }}<span class="who"><b>{{ c.name }}</b><span class="muted">{{ c.last }}</span></span></span>
+  <span class="muted small">{{ c.at }}</span>
+</a>
+{% else %}
+<div class="empty"><b>No chats yet</b><p>Messages with other builders will show up here.</p></div>
+{% endfor %}
+{% endblock %}

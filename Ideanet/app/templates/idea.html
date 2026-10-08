@@ -1,0 +1,30 @@
+{#
+  PROJECT PAGE. Route:  GET /idea/<id>
+  Variables
+    p         dict  id, title, idea, built, improve, by, hackathon, date, likes, tech (list), tint (optional), mine (bool)
+    comments  list  see _macros.html (optional)
+#}
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar, tags, comments as comment_box %}
+{% set active = 'forum' %}
+{% set page_title = p.title %}
+{% set back_url = '/forum' %}
+{% block content %}
+<section class="proj-hero" style="background: var(--t-{{ p.tint or 'blue' }})">
+  <span class="pill">{{ 'Your project' if p.mine else 'Project' }}</span>
+  <h1>{{ p.title }}</h1>
+  <div>{{ p.hackathon or 'Personal project' }} · {{ p.by }}{% if p.date %} · {{ p.date }}{% endif %}</div>
+</section>
+<div class="proj-body">
+  <section><h2 class="sec">About</h2><p>{{ p.idea }}</p></section>
+  {% if p.built %}<section><h2 class="sec">What's built</h2><p>{{ p.built }}</p></section>{% endif %}
+  {% if p.improve %}<section class="boxed"><h2 class="sec">How to take it further</h2><p>{{ p.improve }}</p></section>{% endif %}
+  {{ tags(p.tech) }}
+  <div class="actions">
+    <button type="button" class="act" data-like aria-pressed="false" aria-label="Like">{{ icon('heart') }}<span>{{ p.likes or 0 }}</span></button>
+    <button type="button" class="act" data-save aria-pressed="false">{{ icon('bookmark') }}<span>Save</span></button>
+  </div>
+  <form method="post" action="/result"><input type="hidden" name="idea" value="{{ p.idea }}"><button type="submit" class="btn block">Find similar projects</button></form>
+  {{ comment_box(p.id, comments) }}
+</div>
+{% endblock %}

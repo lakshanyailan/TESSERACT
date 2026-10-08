@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{#
+  Shared layout for every Ideanet page.
+  Child templates set two variables before their blocks:
+      {% set active = 'explore' %}      one of: forum, explore, upcoming, chats, profile
+      {% set page_title = 'Explore' %}  shown in the top bar
+  Blocks: title, content
+  Works with Flask's flashed messages and with g.user (set in auth.py).
+#}
+{% from "_macros.html" import icon %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}{{ page_title|default('Ideanet') }} · Ideanet{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    /* apply the saved theme before first paint so there is no flash */
+    try { var t = localStorage.getItem("ideanet-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  </script>
+</head>
+<body>
+{% set nav = [
+  ('forum',    'For you',  '/forum',    'home'),
+  ('explore',  'Explore',  '/',         'search'),
+  ('upcoming', 'Upcoming', '/upcoming', 'film'),
+  ('chats',    'Chats',    '/chats',    'chat'),
+  ('profile',  'Profile',  '/profile',  'user') ] %}
+<div class="app">
+  <aside class="rail" aria-label="Primary">
+    <a class="logo" href="/">ideanet</a>
+    <nav>
+      {% for key, label, href, ic in nav %}
+        <a class="rail-btn{{ ' on' if active == key }}" href="{{ href }}"{% if active == key %} aria-current="page"{% endif %}>{{ icon(ic, 24) }}<span>{{ label }}</span></a>
+      {% endfor %}
+    </nav>
+    <a class="btn block cta" href="/">Test an idea</a>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      {% if back_url %}<a class="round solid" href="{{ back_url }}" aria-label="Back">{{ icon('back') }}</a>{% endif %}
+      <span class="topbar-title">{{ page_title|default('Ideanet') }}</span>
+      <a class="logo small" href="/">ideanet</a>
+      <button type="button" class="round theme-btn" id="theme-toggle" aria-label="Switch light or dark mode">{{ icon('moon', 20) }}</button>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <p class="flash {{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <nav class="tabbar" aria-label="Primary">
+    {% for key, label, href, ic in nav %}
+      <a class="{{ 'on' if active == key }}" href="{{ href }}" aria-label="{{ label }}"{% if active == key %} aria-current="page"{% endif %}>{{ icon(ic, 24) }}</a>
+    {% endfor %}
+  </nav>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

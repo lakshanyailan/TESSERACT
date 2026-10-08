@@ -1,0 +1,35 @@
+{#
+  UPCOMING hackathons. Route:  GET /upcoming
+  Variable  upcoming  list of {name, host, dates, where, about, tags (list), url, tint, ac}
+            tint = blue|purple|green|pink|peach|teal    ac = accent colour hex (optional)
+  If the backend passes nothing, the sample list below is shown.
+#}
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% set active = 'upcoming' %}
+{% set page_title = 'Upcoming' %}
+{% block content %}
+{% set tints = ['blue', 'pink', 'green', 'purple', 'peach', 'teal'] %}
+{% set accents = ['#8EBDF2', '#B7A4F0', '#86D4B0', '#F2A3C2', '#F0BE92', '#7FD3D6'] %}
+{% set items = upcoming|default([
+  {'name': 'Monsoon Code Jam', 'host': 'Open Data Collective', 'dates': '17 to 18 Oct', 'where': 'Online', 'about': 'Build tools that help neighbourhoods prepare for floods, using public rainfall and drainage data.', 'tags': ['civic', 'open data'], 'url': '#'},
+  {'name': 'Local AI Lab', 'host': 'Coimbatore Developers', 'dates': '24 Oct', 'where': 'Coimbatore', 'about': 'One day for projects where the AI runs on your own laptop. No cloud model APIs.', 'tags': ['local AI', 'Gemma'], 'url': '#'},
+  {'name': 'Campus Climate Hack', 'host': 'Green Campus Network', 'dates': '1 to 2 Nov', 'where': 'Bengaluru', 'about': 'Cut waste and energy use on a real campus, with data from the facilities team.', 'tags': ['climate', 'campus'], 'url': '#'}
+]) %}
+<p class="muted pad">Upcoming hackathons. Scroll through, then register on the organiser's page.</p>
+<div class="reels" tabindex="0" aria-label="Upcoming hackathons">
+  {% for u in items %}
+  <article class="reel" data-n="{{ '%02d'|format(loop.index) }}" style="--rt: var(--t-{{ u.tint or tints[loop.index0 % 6] }}); --ac: {{ u.ac or accents[loop.index0 % 6] }}">
+    <div class="reel-top"><span class="pill">{{ loop.index }} of {{ items|length }}</span><span class="pill">{{ u.where }}</span></div>
+    <div class="reel-main">
+      <div class="reel-host">{{ u.host }}</div>
+      <h2>{{ u.name }}</h2>
+      <div class="reel-date">{{ icon('pin', 18) }} {{ u.dates }} · {{ u.where }}</div>
+      <p>{{ u.about }}</p>
+      <div class="tags dark">{% for t in u.tags %}<span>#{{ t|replace(' ', '') }}</span>{% endfor %}</div>
+    </div>
+    <a class="btn dark block" href="{{ u.url }}" target="_blank" rel="noopener noreferrer">Register {{ icon('up', 16) }}</a>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

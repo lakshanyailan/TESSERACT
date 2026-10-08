@@ -1,0 +1,60 @@
+{#
+  FOR YOU feed. Route:  GET /forum
+  Variables
+    stories  list  ongoing hackathons, each {name, tint, id}              (optional)
+    posts    list  project ideas, newest first. Each item:
+               id, title, idea, by, hackathon, date_label ("2h ago"), likes, tech (list),
+               tint (blue|purple|green|pink|peach|teal, optional),
+               comment_count, comments (list, see _macros.html)
+#}
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar, tags, comments %}
+{% set active = 'forum' %}
+{% set page_title = 'For you' %}
+{% block content %}
+{% set tints = ['blue', 'purple', 'green', 'pink', 'peach', 'teal'] %}
+{% if stories %}
+<section class="stories" aria-label="Ongoing hackathons">
+  {% for s in stories %}
+  <a class="story-btn" href="{{ s.url or '/forum' }}" aria-label="Open story: {{ s.name }}, ongoing">
+    <span class="ring grey" style="width:72px;height:72px">{{ avatar(s.name, s.tint or tints[loop.index0 % 6], 62) }}</span>
+    <span>{{ s.name }}</span>
+    <i class="livedot">Live</i>
+  </a>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% for p in posts|default([]) %}
+{% set t = p.tint or tints[loop.index0 % 6] %}
+<article class="post">
+  <header class="post-head">
+    <span class="row">
+      {{ avatar(p.hackathon or 'P', t, 40) }}
+      <span class="who"><b>{{ p.hackathon or 'Personal project' }}</b><span class="muted">{{ p.by }}{% if p.date_label %} · {{ p.date_label }}{% endif %}</span></span>
+    </span>
+    {% if p.hackathon %}<button type="button" class="chip-btn" data-follow aria-pressed="false">Follow</button>{% endif %}
+  </header>
+  <a class="plain tile" href="/idea/{{ p.id }}" style="background: var(--t-{{ t }})" aria-label="Open {{ p.title }}">
+    <span class="tile-title">{{ p.title }}</span>
+    <span class="tile-by">by {{ p.by }}</span>
+  </a>
+  <p class="post-text">{{ p.idea }}</p>
+  {{ tags(p.tech) }}
+  <div class="actions">
+    <button type="button" class="act" data-like aria-pressed="false" aria-label="Like {{ p.title }}">{{ icon('heart') }}<span>{{ p.likes or 0 }}</span></button>
+    <form method="post" action="/result" style="display:contents"><input type="hidden" name="idea" value="{{ p.idea }}"><button type="submit" class="act" aria-label="Find projects similar to {{ p.title }}">{{ icon('search') }}<span>Find similar</span></button></form>
+    <button type="button" class="act" data-toggle-comments="cm-box-{{ p.id }}" aria-expanded="false" aria-label="Show comments on {{ p.title }}">{{ icon('comment') }}<span>{{ p.comment_count if p.comment_count is defined else (p.comments|default([])|length) }}</span></button>
+    <span class="grow"></span>
+    <button type="button" class="act icon" data-save aria-pressed="false" aria-label="Save {{ p.title }}">{{ icon('bookmark') }}</button>
+  </div>
+  <div id="cm-box-{{ p.id }}" hidden>{{ comments(p.id, p.comments, True) }}</div>
+</article>
+{% else %}
+<div class="empty">
+  <b>Nothing here yet</b>
+  <p>Follow a hackathon to see its projects in your feed.</p>
+  <a class="btn" href="/">Test an idea</a>
+</div>
+{% endfor %}
+{% endblock %}

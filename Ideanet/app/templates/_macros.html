@@ -1,0 +1,72 @@
+{# Shared bits. Import with: {% from "_macros.html" import icon, avatar %} #}
+{% macro icon(name, size=22) -%}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{%- if name == 'home' %}<path d="M4 11l8-7 8 7v9H4z"/>
+{%- elif name == 'search' %}<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/>
+{%- elif name == 'film' %}<rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M10 9.2l5 2.8-5 2.8z"/>
+{%- elif name == 'chat' %}<path d="M4 5h16v11H9l-5 4z"/>
+{%- elif name == 'user' %}<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.8-4 3.7-5.8 7.5-5.8s6.7 1.8 7.5 5.8"/>
+{%- elif name == 'heart' %}<path d="M12 20.5s-8-4.8-8-11A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5c0 6.2-8 11-8 11z"/>
+{%- elif name == 'bookmark' %}<path d="M6 3h12v18l-6-4.5L6 21z"/>
+{%- elif name == 'left' %}<path d="M14 5l-7 7 7 7"/>
+{%- elif name == 'right' %}<path d="M10 5l7 7-7 7"/>
+{%- elif name == 'back' %}<path d="M12 4l-6 8 6 8"/>
+{%- elif name == 'x' %}<path d="M5 5l14 14M19 5L5 19"/>
+{%- elif name == 'send' %}<path d="M4 12l16-8-6 16-3-7z"/>
+{%- elif name == 'pin' %}<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>
+{%- elif name == 'up' %}<path d="M7 17L17 7M9 7h8v8"/>
+{%- elif name == 'pause' %}<path d="M8 5v14M16 5v14"/>
+{%- elif name == 'play' %}<path d="M8 5l11 7-11 7z"/>
+{%- elif name == 'comment' %}<path d="M4 5h16v11H9l-5 4z M8 9.5h8M8 12.5h5"/>
+{%- elif name == 'moon' %}<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>
+{%- elif name == 'sun' %}<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>
+{%- elif name == 'trash' %}<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>
+{%- endif -%}
+</svg>
+{%- endmacro %}
+
+{# Round initials badge. tint is one of: blue purple green pink peach teal #}
+{% macro avatar(name, tint='purple', size=40, img=None) -%}
+<span class="av" style="width:{{ size }}px;height:{{ size }}px;font-size:{{ (size * 0.36)|round|int }}px;--pc:var(--t-{{ tint or 'purple' }})">
+{%- if img %}<img src="{{ img }}" alt="">{% else %}{{ ((name or '?').split() | map('first') | join('') | upper)[:2] }}{% endif -%}
+</span>
+{%- endmacro %}
+
+{# Hashtag chips from a list of tech names #}
+{% macro tags(items) -%}
+{%- if items %}<div class="tags">{% for t in items %}<span>#{{ t|lower|replace(' ', '')|replace('.', '') }}</span>{% endfor %}</div>{% endif -%}
+{%- endmacro %}
+
+{# Comment list + form.  post_id is the project id; comments is a list of
+   dicts: {id, name, handle, text, at, likes, mine}.  The form POSTs to
+   /idea/<post_id>/comment with a field called "text". #}
+{% macro comments(post_id, items, compact=False) -%}
+{% set list = items or [] %}
+<section class="comments" aria-label="Comments, {{ list|length }}">
+  {% if not compact %}<h2 class="sec">Comments <span class="muted">({{ list|length }})</span></h2>{% endif %}
+  <ul class="clist">
+    {% if not list %}<li class="muted small">No comments yet. Start the conversation.</li>{% endif %}
+    {% for c in list %}
+    <li class="comment">
+      {{ avatar(c.name, 'purple' if c.mine else 'blue', 32) }}
+      <div class="c-body">
+        <div class="c-line"><b>{{ c.name }}</b><span class="muted small">{{ c.handle }}{% if c.at %} · {{ c.at }}{% endif %}</span></div>
+        <p>{{ c.text }}</p>
+        <div class="c-actions">
+          <button type="button" class="c-act" data-like aria-pressed="false" aria-label="Like comment by {{ c.name }}">{{ icon('heart', 15) }}<span>{{ c.likes or 0 }}</span></button>
+          {% if c.mine %}
+          <form method="post" action="/idea/{{ post_id }}/comment/{{ c.id }}/delete" style="display:inline"><button type="submit" class="c-act" aria-label="Delete your comment">{{ icon('trash', 15) }}<span>Delete</span></button></form>
+          {% endif %}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <form class="c-form" method="post" action="/idea/{{ post_id }}/comment">
+    {{ avatar((g.user.username if g is defined and g.user else 'You'), 'purple', 32) }}
+    <label for="cm-{{ post_id }}" class="sr">Add a comment</label>
+    <input id="cm-{{ post_id }}" name="text" type="text" maxlength="280" placeholder="Add a comment" autocomplete="off" required>
+    <button type="submit" class="round solid" aria-label="Post comment">{{ icon('send', 18) }}</button>
+  </form>
+</section>
+{%- endmacro %}
