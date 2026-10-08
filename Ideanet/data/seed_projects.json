@@ -1,14 +1,293 @@
 [
   {
-    "id": 1,
-    "name": "Website Redesign",
-    "description": "Refresh the company website",
-    "status": "active"
+    "id": "o1",
+    "title": "Scam Shield",
+    "idea": "Reads incoming messages and warns when one looks like a scam, with a plain-language reason.",
+    "built": "A phone-number and link checker that flags known scam patterns in pasted messages. No voice or call support.",
+    "improve": "Add voice call screening and support for regional languages.",
+    "hackathon": "Night Shift Hack",
+    "by": "@mira",
+    "date": "2026-10-07",
+    "tech": [
+      "Python",
+      "Gemma",
+      "FastAPI"
+    ],
+    "keywords": [
+      "scam",
+      "message",
+      "warning",
+      "fraud",
+      "safety",
+      "elderly"
+    ],
+    "likes": 48,
+    "tint": "blue"
   },
   {
-    "id": 2,
-    "name": "Mobile App",
-    "description": "Build an app for iOS and Android",
-    "status": "planned"
+    "id": "o2",
+    "title": "Quiet Hours",
+    "idea": "Schedules do-not-disturb windows for night workers based on their shift rota.",
+    "built": "Reads a shared rota and mutes chosen apps in the right windows. Single user only.",
+    "improve": "Let families share the same quiet windows so others know when not to call.",
+    "hackathon": "Night Shift Hack",
+    "by": "@dev",
+    "date": "2026-10-08",
+    "tech": [
+      "React",
+      "SQLite"
+    ],
+    "keywords": [
+      "schedule",
+      "shift",
+      "notification",
+      "sleep",
+      "calendar"
+    ],
+    "likes": 21,
+    "tint": "blue"
+  },
+  {
+    "id": "o3",
+    "title": "Receipt Lens",
+    "idea": "Photograph a receipt and get a tidy spending breakdown by category.",
+    "built": "Extracts line items from receipt photos and groups them. Accuracy drops on crumpled paper.",
+    "improve": "Add monthly trends and shared budgets for flatmates.",
+    "hackathon": "Night Shift Hack",
+    "by": "@anand",
+    "date": "2026-10-08",
+    "tech": [
+      "Python",
+      "Gemma",
+      "OCR"
+    ],
+    "keywords": [
+      "receipt",
+      "expense",
+      "finance",
+      "photo",
+      "budget",
+      "tracker"
+    ],
+    "likes": 63,
+    "tint": "blue"
+  },
+  {
+    "id": "o4",
+    "title": "Lab Notes",
+    "idea": "Turns messy lab-meeting audio into clean notes and action items.",
+    "built": "Transcribes a recording and lists decisions. Speaker names are not tracked.",
+    "improve": "Identify speakers and link action items to a task board.",
+    "hackathon": "Open Source Sprint",
+    "by": "@sara",
+    "date": "2026-10-06",
+    "tech": [
+      "Whisper",
+      "Gemma",
+      "Svelte"
+    ],
+    "keywords": [
+      "notes",
+      "meeting",
+      "audio",
+      "summary",
+      "transcribe",
+      "voice"
+    ],
+    "likes": 34,
+    "tint": "purple"
+  },
+  {
+    "id": "o5",
+    "title": "Repo Radar",
+    "idea": "Shows which open issues in a repo are friendly to first-time contributors.",
+    "built": "Ranks issues by labels and age. Does not read the issue text itself.",
+    "improve": "Use a local model to judge how clear and small each issue is.",
+    "hackathon": "Open Source Sprint",
+    "by": "@kiran",
+    "date": "2026-10-07",
+    "tech": [
+      "TypeScript",
+      "GitHub API"
+    ],
+    "keywords": [
+      "github",
+      "issue",
+      "contributor",
+      "beginner",
+      "repo",
+      "open source"
+    ],
+    "likes": 57,
+    "tint": "purple"
+  },
+  {
+    "id": "o6",
+    "title": "Changelog Bot",
+    "idea": "Writes human-readable release notes from merged pull requests.",
+    "built": "Summarises merged pull requests into a markdown file on each release.",
+    "improve": "Group changes by user impact rather than by commit order.",
+    "hackathon": "Open Source Sprint",
+    "by": "@lee",
+    "date": "2026-10-05",
+    "tech": [
+      "Node",
+      "Gemma"
+    ],
+    "keywords": [
+      "changelog",
+      "release",
+      "github",
+      "pull request",
+      "documentation"
+    ],
+    "likes": 29,
+    "tint": "purple"
+  },
+  {
+    "id": "o7",
+    "title": "Docs Doctor",
+    "idea": "Finds out-of-date lines in a README by comparing it with the code.",
+    "built": "Flags README sections whose function names no longer exist.",
+    "improve": "Suggest the fix as a ready-to-merge pull request.",
+    "hackathon": "Open Source Sprint",
+    "by": "@noor",
+    "date": "2026-10-04",
+    "tech": [
+      "Python",
+      "Embeddings"
+    ],
+    "keywords": [
+      "documentation",
+      "readme",
+      "code",
+      "repo",
+      "outdated"
+    ],
+    "likes": 18,
+    "tint": "purple"
+  },
+  {
+    "id": "o8",
+    "title": "Bus Buddy",
+    "idea": "Live campus shuttle times and a seat-share board for late classes.",
+    "built": "Shows shuttle arrival times from a manual feed. No live GPS.",
+    "improve": "Add GPS from the driver phone and a walking-group option at night.",
+    "hackathon": "Campus Hack Day",
+    "by": "@ravi",
+    "date": "2026-09-06",
+    "tech": [
+      "Flutter",
+      "Firebase"
+    ],
+    "keywords": [
+      "bus",
+      "transport",
+      "campus",
+      "schedule",
+      "students",
+      "travel"
+    ],
+    "likes": 72,
+    "tint": "pink"
+  },
+  {
+    "id": "o9",
+    "title": "Doubt Desk",
+    "idea": "Students post a doubt, and a local model drafts a first answer before a senior replies.",
+    "built": "A question board with an AI draft answer. Seniors can edit and approve.",
+    "improve": "Match each doubt to the senior who answered a similar one before.",
+    "hackathon": "Campus Hack Day",
+    "by": "@isha",
+    "date": "2026-09-05",
+    "tech": [
+      "Django",
+      "Gemma"
+    ],
+    "keywords": [
+      "students",
+      "doubt",
+      "question",
+      "study",
+      "tutor",
+      "campus"
+    ],
+    "likes": 41,
+    "tint": "pink"
+  },
+  {
+    "id": "o10",
+    "title": "Split Easy",
+    "idea": "Splits shared bills from a photo of the receipt and settles up over UPI.",
+    "built": "Reads a receipt, lets friends claim items, and shows who owes whom.",
+    "improve": "Remember regular groups and suggest the fewest payments to settle.",
+    "hackathon": "Build Weekend",
+    "by": "@tanvi",
+    "date": "2026-08-16",
+    "tech": [
+      "React Native",
+      "OCR"
+    ],
+    "keywords": [
+      "receipt",
+      "bill",
+      "split",
+      "expense",
+      "finance",
+      "photo",
+      "friends"
+    ],
+    "likes": 66,
+    "tint": "green"
+  },
+  {
+    "id": "o11",
+    "title": "Trip Pad",
+    "idea": "A shared itinerary board for group trips with voting on plans.",
+    "built": "Group board with places, dates and votes. Planning is fully manual.",
+    "improve": "Suggest a route and a day plan from the places the group voted for.",
+    "hackathon": "Build Weekend",
+    "by": "@jo",
+    "date": "2026-08-15",
+    "tech": [
+      "Next.js",
+      "Postgres"
+    ],
+    "keywords": [
+      "travel",
+      "trip",
+      "itinerary",
+      "planner",
+      "friends",
+      "group"
+    ],
+    "likes": 38,
+    "tint": "green"
+  },
+  {
+    "id": "o12",
+    "title": "Scheme Finder",
+    "idea": "Tells citizens which government schemes they may qualify for, in simple language.",
+    "built": "A short questionnaire that lists matching schemes. Text only, English only.",
+    "improve": "Add voice input and local languages so older people can use it unaided.",
+    "hackathon": "Civic Code",
+    "by": "@asha",
+    "date": "2026-06-13",
+    "tech": [
+      "Python",
+      "Gemma",
+      "React"
+    ],
+    "keywords": [
+      "government",
+      "scheme",
+      "citizen",
+      "eligibility",
+      "language",
+      "elderly",
+      "voice"
+    ],
+    "likes": 52,
+    "tint": "blue"
   }
 ]
