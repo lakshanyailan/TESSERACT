@@ -108,9 +108,9 @@ Everything in this repository was built during the Hacktoberfest Hack Day in Coi
 
 ## Demo Video
 
-**Demo Video:** [(https://drive.google.com/drive/folders/1bdSLhgLMG7n-9E7ipgq587zPqiLAHaTk?usp=share_link)]
+**Demo Video:** [https://drive.google.com/drive/folders/1iNavnq9Cnngvw5FzXx0w-Npy8X5tZyl2?usp=drive_link]
 
-[shows the live display of the model]
+
 
 ## Open Source and AI Usage
 
