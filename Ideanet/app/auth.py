@@ -5,10 +5,10 @@ from . import auth
 def create_app():
     app = Flask(__name__)
 
-    # Secret key for Flask sessions
+   
     app.config["SECRET_KEY"] = "change-this-secret-key"
 
-    # Connect authentication system
+   
     auth.init_app(app)
 
     @app.route("/")
