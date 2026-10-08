@@ -202,13 +202,13 @@ MIT License. See [LICENSE](LICENSE).
 - [x] Work completed during the hackathon documented
 - [x] Team contributions documented
 - [x] Working application is functional
-- [ ] Live application link added where applicable
-- [ ] Demo video added
+- [x] Live application link added where applicable
+- [x] Demo video added
 - [x] AI and open-source components documented
-- [ ] Setup and usage instructions tested
-- [ ] Challenges and learnings documented
-- [ ] Devpost submission completed
-- [ ] Devpost link added
+- [x] Setup and usage instructions tested
+- [x] Challenges and learnings documented
+- [x] Devpost submission completed
+- [x] Devpost link added
 - [x] Credits added
 - [x] License added
-- [ ] Repository is organized and complete
+- [x] Repository is organized and complete
